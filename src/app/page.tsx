@@ -1,14 +1,32 @@
-import Carousel from './components/Carousel';
-import Link from 'next/link';
+'use client'
+import Carousel from './components/Carousel'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
-const products = [
-  { id: 1, name: 'T-Shirt Smile Love', price: 'Rp 120.000', image: '/images/tshirt.jpeg' },
-  { id: 2, name: 'Baju Lengan Flowers', price: 'Rp 80.000', image: '/images/bj1.jpg' },
-  { id: 3, name: 'Kemeja Casual', price: 'Rp 125.000', image: '/images/kemeja.jpg' },
-  { id: 4, name: 'Kemeja Panjang Jeans', price: 'Rp 200.000', image: '/images/kemejaJeans.jpg' },
-];
+type Product = {
+  id: number
+  name: string
+  price: number
+  image: string
+}
 
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>([])
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/products')
+        const data = await res.json()
+        setProducts(data)
+      } catch (error) {
+        console.error('Gagal memuat produk:', error)
+      }
+    }
+
+    fetchProducts()
+  }, [])
+
   return (
     <div>
       <Carousel />
@@ -20,13 +38,12 @@ export default function Home() {
               <img src={p.image} alt={p.name} className="w-full h-48 object-cover" />
               <div className="p-4">
                 <h3 className="font-semibold">{p.name}</h3>
-                <p className="text-blue-600 font-bold">{p.price}</p>
+                <p className="text-blue-600 font-bold">Rp {p.price.toLocaleString('id-ID')}</p>
               </div>
             </div>
           </Link>
         ))}
       </div>
     </div>
-  );
+  )
 }
-

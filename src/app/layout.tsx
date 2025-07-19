@@ -24,6 +24,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </Link>
               <Link
                 href="/products"
+                className="hover:text-pink-600">
+                Products
+              </Link>
+              <Link
+                href="/admin"
                 className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-1.5 rounded-md text-sm transition">
                 + Barang
               </Link>

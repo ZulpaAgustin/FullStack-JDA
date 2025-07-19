@@ -1,69 +1,38 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { PrismaClient } from '@prisma/client'
 
-let products = [
-  {
-    id: 1,
-    name: 'T-Shirt Smile Love',
-    price: 120000,
-    image: '/images/tshirt.jpeg',
-  },
-  {
-    id: 2,
-    name: 'Baju Lengan Flowers',
-    price: 80000,
-    image: '/images/bj1.jpg',
-  },
-  {
-    id: 3,
-    name: 'Kemeja Casual',
-    price: 125000,
-    image: '/images/kemeja.jpg',
-  },
-  {
-    id: 4,
-    name: 'Kemeja Panjang Jeans',
-    price: 200000,
-    image: '/images/kemejaJeans.jpg',
-  },
-];
+const prisma = new PrismaClient()
 
+// GET
 export async function GET() {
-  return NextResponse.json(products);
+  const products = await prisma.product.findMany({
+    orderBy: { createdAt: 'desc' }
+  })
+  return NextResponse.json(products)
 }
 
+// POST
 export async function POST(req: Request) {
-  const body = await req.json();
+  try {
+    const body = await req.json()
+    const { name, description, price, image } = body
 
-  const newProduct = {
-    id: Date.now(),
-    name: body.name,
-    price: body.price,
-    image: body.image || '', 
-  };
+    if (!name || !description || price === undefined) {
+      return NextResponse.json({ error: 'Name, description, dan price wajib diisi.' }, { status: 400 })
+    }
 
-  products.push(newProduct);
-  return NextResponse.json(newProduct);
-}
+    const newProduct = await prisma.product.create({
+      data: {
+        name,
+        description,
+        price: parseFloat(price),
+        image,
+      },
+    })
 
-export async function PUT(req: Request) {
-  const body = await req.json();
-
-  products = products.map((p) =>
-    p.id === body.id
-      ? {
-          ...p,
-          name: body.name,
-          price: body.price,
-          image: body.image || p.image,
-        }
-      : p
-  );
-
-  return NextResponse.json({ message: 'Updated' });
-}
-
-export async function DELETE(req: Request) {
-  const body = await req.json();
-  products = products.filter((p) => p.id !== body.id);
-  return NextResponse.json({ message: 'Deleted' });
+    return NextResponse.json(newProduct)
+  } catch (error) {
+    console.error('POST Error:', error)
+    return NextResponse.json({ error: 'Terjadi kesalahan saat menyimpan.' }, { status: 500 })
+  }
 }
